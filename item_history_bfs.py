@@ -121,7 +121,7 @@ def get_item_history(value,feature,index,activities,relations,derivations,entiti
     use a bfs algorithm, searching derivation to build the history of an entity is like exploring a tree
     """
     # Get activities related to entity_ids:
-
+    print(index)
     act = list(activities.find({}))
     act_with_feature = search_activity_with_feature(feature,act)
     # ordino le attività che hanno usato o generato quella feature in ordine decrescente, in questo modo posso andaare a a ritroso
@@ -152,6 +152,7 @@ def get_item_history(value,feature,index,activities,relations,derivations,entiti
         used_id = derivations.find({'gen': entity_id}, {'_id': 0, 'used': 1})
         # generated_id=derivations.find({'used':entity_id},{'_id':0,'gen':1})
         used_node = list(used_id)
+        print(f'used {used_node}')
         #print(used_node)
         # if there is a derivation
         if len(used_node) > 0:
@@ -188,6 +189,7 @@ def get_item_history(value,feature,index,activities,relations,derivations,entiti
                 if used_act['attributes']['function_name'] == 'Imputation':
                     node_list.append(f'Imputation {used_act["attributes"]["used_features"]}')
                     edge_list.append([len(node_list) - 1, node_list.index(used_act_id)])
+            break
 
     #print(node_list)
     # se l'entità non ha mai subito operazioni provo solo a cercarla nelle entità
@@ -210,17 +212,17 @@ def get_item_history(value,feature,index,activities,relations,derivations,entiti
         #print(node_list)
         #if the value has not been changed
         if len(node_list)==0:
-            print('ci sonoooo')
             entity_id = value + SEPARATOR + feature + SEPARATOR + index + SEPARATOR + '-1'
             entity = entities.find({'id': entity_id})
             nodes = list(entity)
             if len(nodes) > 0:
                 node = nodes[0]['id']
                 node_list.append(node)
-
+    print(f'primo giro {queue}')
     #next iterations of the bfs
     #same logic of the first iteration
     while len(queue)>0:
+        print(queue)
         entity_id,index_node=queue.pop(0)
         feature=entity_id.split(SEPARATOR)[1]
         num_op=entity_id.split(SEPARATOR)[3]
@@ -243,9 +245,10 @@ def get_item_history(value,feature,index,activities,relations,derivations,entiti
         used_id = derivations.find({'gen': entity_id}, {'_id': 0, 'used': 1})
         used_node = list(used_id)
         if len(used_node) > 0:
+            print(used_node)
             for node in used_node:
                 node_id = node['used']
-                op_num_gen = str(activity[1])
+                op_num_gen = entity_id.split(SEPARATOR)[3]
                 feature_used = node_id.split(SEPARATOR)[1]
                 # cerco l'attività che ha usato used_id
 
